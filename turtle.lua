@@ -220,16 +220,14 @@ local function mainLoop()
     -- If direction is correct, move once.
     if facing == direction then
       if not turtleMove() then
+        -- If movement fails, check if a block is an obstacle
         if turtle.detect() then
         end
+        -- Is there enough fuel?
         if not turtle.getFuelLevel() > 0 then
         end
-        -- If movement fails
-          -- Check if a block is an obstacle
-          -- Check fuel levels
       end
-    -- Else, turn once.
-    else
+    else  -- Else, turn once.
       turtleTurn(direction)
     end
   -- If co-ordinates are correct.
@@ -255,6 +253,7 @@ end
 
 --[[ -- Debugger is not able to run when instructions are given. Remove comments to run the program.
 -- Open network side
+rednet.open()
 -- Load last state from file
 -- Run self checks
   -- Get GPS location
@@ -262,6 +261,7 @@ end
 -- Set selected slot to 1
   selectInventorySlot(1)
 -- Start eventLoop() and mainLoop() simoultaneously using CC API.
+paralell.waitForAll(mainLoop(), eventLoop())
 -- When loops fail/shut down, save state to disk.
 -- End program
 --]]
