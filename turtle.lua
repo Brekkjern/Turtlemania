@@ -118,17 +118,19 @@ end
 local function turtleTurn(direction)          -- Relative direction (Right/Left)
   if direction ~= "Left" or direction ~= "Right" then
     writeMessage("(turtleTurn): Bad argument. Direction not recognized. Got "..direction, messageLevel.FATAL)
-    return(false)                               -- Returns false as input was not correct.
+    return(false)                             -- Returns false as input was not correct.
   end
   if direction == "Left" then
     facing = facing - 1                         -- Subtracts 1 from facing
+    turtle.turnLeft()
   elseif direction == "Right" then
     facing = facing + 1                         -- Adds 1 to facing
+    turtle.turnRight()
   end
   writeMessage("turtleTurn): Facing before fmod: "..facing, messageLevel.DEBUG)
   facing = math.fmod(facing, 4)                 -- Wraps facing around'
   writeMessage("turtleTurn): Facing after fmod: "..facing, messageLevel.DEBUG)
-  return(turtle.turn[direction]())             -- Turns the turtle in the set direction
+  return(facing)
 end
 
 --[[ turtleFace()
