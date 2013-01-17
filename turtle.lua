@@ -193,19 +193,16 @@ end
 -- Check if block in dir is a scrap block
 -- Returns true if block is a scrap block.
 local function detectScrapBlock(dir)
+  local compareDirection = {
+    front = turtle.compare(),
+    top = turtle.compareUp(),
+    bottom = turtle.compareDown(),
+  }
   local compare = false
-  if dir == nil then
-    for index, value in ipairs(inventory.scrap) do
-      selectInventorySlot(value)
-      if turtle.compare() then
-        compare = true
-      end
-    end
-  elseif dir == "Up" or dir == "Down" then
-    for index, value in ipairs(inventory.scrap) do
-      if turtle.compare[dir]() then
-        compare = true
-      end
+  for index, value in ipairs(inventory.scrap) do
+    selectInventorySlot(value)
+    if compareDirection[dir] then
+      compare = true
     end
   end
   return(compare)
