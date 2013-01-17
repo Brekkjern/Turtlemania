@@ -7,10 +7,14 @@ local directions = {
   [1] = "east",
   [2] = "south",
   [3] = "west",
+  [4] = "up",
+  [5] = "down",
   north = 0,
   east = 1,
   south = 2,
-  west = 3
+  west = 3,
+  up = 4,
+  down = 5
 }
 
 -- Enumeration to store the the different types of message that can be written
@@ -26,9 +30,6 @@ local messageBroadcastLevel = messageLevel.ERROR        -- Level to broadcast to
 
 -- Variable denotes what direction the turtle is facing
 local facing = 0
-
--- Fuel level. Local values are much faster than global.
-local fuel = 0
 
 -- Inventory.
 local inventory = {
@@ -48,10 +49,10 @@ local inventory = {
 -- Writes a message in terminal and broadcasts the error.
 local function writeMessage(message, msgLevel)
   if msgLevel >= messagePrintLevel then
-    print(messageLevelNum[msgLevel]": "..message)
+    print(os.date("%H:%M:%S")..": "..messageLevelNum[msgLevel]": "..message)
   end
   if msgLevel >= messageBroadcastLevel then
-    rednet.broadcast(messageLevelNum[msgLevel]": "..message)
+    return(rednet.broadcast(os.date("%H:%M:%S")..": "..messageLevelNum[msgLevel]": "..message))
   end
 end
 
@@ -60,6 +61,7 @@ local function changeMessageLevels(Print, Broadcast)
   messagePrintLevel = messageLevel[Print]
   messageBroadcastLevel = messageLevel[Broadcast]
   writeMessage("(changeMessageLevels): Message levels changed. Print level: "..Print..". Broadcast level: "..Broadcast, messageLevel.INFO)
+  return messagePrintLevel, messageBroadcastLevel
 end
 
 -- Utility
@@ -105,16 +107,15 @@ end
 
 -- Selects inventory slot and updates the table with what slot that is.
 local function selectInventorySlot(slot)
-  nSlot = tonumber(slot)
-  turtle.select(nSlot)
-  inventory.selected = nSlot
+  turtle.select(slot)
+  inventory.selected = slot
   writeMessage("(selectInventorySlot): Inventory slot "..slot.." selected.", messageLevel.INFO)
   return(true)
 end
 
 -- Turning
--- Function to turn the turtle in a relative direction. Errors if direction is not valid.
-local function turtleTurn(direction)          -- Relative direction (right/left)
+-- Function to turn the turtle in a relative direction.
+local function turtleTurn(direction)          -- Relative direction (Right/Left)
   if direction ~= "Left" or "Right" then
     writeMessage("(turtleTurn): Bad argument. Direction not recognized. Got "..direction, messageLevel.FATAL)
     return(false)                               -- Returns false as input was not correct.
@@ -130,8 +131,9 @@ local function turtleTurn(direction)          -- Relative direction (right/left)
   return(turtle.turn[direction]())             -- Turns the turtle in the set direction
 end
 
+--[[ turtleFace()
 -- Function to turn the turtle in a numerical compass direction using the least amount of turns.
-local function turtleFace(dir)                -- Numeric direction
+local f#unction turtleFace(dir)                -- Numeric direction
   if facing - dir > 0 then                     -- Shorter to turn left
     repeat
       turtleTurn("Left")
@@ -143,18 +145,15 @@ local function turtleFace(dir)                -- Numeric direction
   end
   return(true)                                  -- Returns true as turning is always possible
 end
+--]]
 
 -- Moving
 -- Function to move the turtle in a numerical compass direction. Will use turtleFace to make it move in that specific direction.
-local function turtleMove(direction)          -- Numeric direction.
-  if not facing == direction then                 -- Checks if the facing is correct.
-    turtleFace(direction)                       -- Turns to face if facing is not correct.
-  end
-  if turtle.forward() then                      -- Commands turtle to move forward and returns boolean success.
-    fuel = fuel - 1                             -- Subtracts 1 from fuel level
-    return(true)                                -- Turtle has moved. Returns true.
-  else
-    return(false)                               -- Turtle has not moved. Return false.
+local function turtleMove(direction)            -- Numeric direction.
+  if direction == nil then
+    return(turtle.forward())                      -- Commands turtle to move forward and returns boolean success.
+  elseif direction == 4 or 5 then
+    return(turtle[directions[direction]])
   end
 end
 
@@ -185,6 +184,7 @@ local function placeBlock(dir)
 end
 
 -- Check if block in dir is a scrap block
+-- Returns true if block is a scrap block.
 local function detectScrapBlock(dir)
   local compare = false
   if dir == nil then
@@ -208,3 +208,60 @@ end
 local function mineBlock(dir)
   return(turtle.dig[dir]())
 end
+
+-- **********************************************************************************
+-- Main Loop
+-- **********************************************************************************
+local function mainLoop()
+  repeat
+  -- Check event variables to see if there have been any updates.
+  -- Check variables. Is there enough fuel?
+  -- If co-ordinates are not correct.
+    -- If direction is correct, move once.
+    if facing == direction then
+      if not turtleMove() then
+        if turtle.detect() then
+        end
+        if not turtle.getFuelLevel() > 0 then
+        end
+        -- If movement fails
+          -- Check if a block is an obstacle
+          -- Check fuel levels
+      end
+    -- Else, turn once.
+    else
+      turtleTurn(direction)
+    end
+  -- If co-ordinates are correct.
+    -- If direction is correct
+      -- Complete task
+    -- Else, turn to face
+      -- Complete task
+  until stop == true  -- Allow a command to stop the turtle?
+end
+
+-- **********************************************************************************
+-- Event Loop
+-- **********************************************************************************
+local function eventLoop()
+  -- Wait for events
+    -- Handle events and put details into tables.
+    -- Pass events on to mainLoop()
+end
+
+-- **********************************************************************************
+-- Program
+-- **********************************************************************************
+
+--[[ -- Debugger is not able to run when instructions are given. Remove comments to run the program.
+-- Open network side
+-- Load last state from file
+-- Run self checks
+  -- Get GPS location
+  countInventory()
+-- Set selected slot to 1
+  selectInventorySlot(1)
+-- Start eventLoop() and mainLoop() simoultaneously using CC API.
+-- When loops fail/shut down, save state to disk.
+-- End program
+--]]
