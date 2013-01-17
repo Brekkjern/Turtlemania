@@ -69,7 +69,7 @@ end
 local function convertDirectionNum(dir)
   if dir == string then
     return(directions[dir])
-  elseif dir == 0 or 1 or 2 or 3 then
+  elseif dir >= 0 or dir <= 3 then
     return(tonumber(dir))
   else
     writeMessage("(convertDirectionNum): Bad argument. Direction not recognized. Got "..dir, messageLevel.FATAL)
@@ -116,7 +116,7 @@ end
 -- Turning
 -- Function to turn the turtle in a relative direction.
 local function turtleTurn(direction)          -- Relative direction (Right/Left)
-  if direction ~= "Left" or "Right" then
+  if direction ~= "Left" or direction ~= "Right" then
     writeMessage("(turtleTurn): Bad argument. Direction not recognized. Got "..direction, messageLevel.FATAL)
     return(false)                               -- Returns false as input was not correct.
   end
@@ -152,7 +152,7 @@ end
 local function turtleMove(direction)            -- Numeric direction.
   if direction == nil then
     return(turtle.forward())                      -- Commands turtle to move forward and returns boolean success.
-  elseif direction == 4 or 5 then
+  elseif direction == 4 or direction == 5 then
     return(turtle[directions[direction]])
   end
 end
@@ -161,24 +161,29 @@ end
 -- Tries to place a block in the direction specified. If no direction is specified, block is placed in front of the turtle.
 -- Returns boolean value of success.
 local function placeBlock(dir)
+  local success = false
   if dir == nil then                           -- If direction is not specified, use forward facing.
     if turtle.place() then
-      inventory.list[inventory.selected] = inventory.list[inventory.selected] - 1
-      inventory.left[inventory.selected] = inventory.left[inventory.selected] + 1
-      return(true)
-    else
-      return(false)
+      success = true
     end
-  elseif dir == "Up" or "Down" then           -- If direction is up or down, place the block.
-    if turtle.place[dir]() then
-      inventory.list[inventory.selected] = inventory.list[inventory.selected] - 1
-      inventory.left[inventory.selected] = inventory.left[inventory.selected] + 1
-      return(true)
-    else
-      return(false)
+  elseif dir == "Up" then
+    if turtle.placeUp() then
+      success = true
+    end
+  elseif dir == "Down" then
+    if turtle.placeDown() then
+      success = true
     end
   else
     writeMessage("(placeBlock): Bad argument. Direction not recognized. Got "..dir, messageLevel.FATAL)
+    return(false)
+  end
+
+  if success == true then
+    inventory.list[inventory.selected] = inventory.list[inventory.selected] - 1
+    inventory.left[inventory.selected] = inventory.left[inventory.selected] + 1
+    return(true)
+  else
     return(false)
   end
 end
@@ -194,7 +199,7 @@ local function detectScrapBlock(dir)
         compare = true
       end
     end
-  elseif dir == "Up" or "Down" then
+  elseif dir == "Up" or dir == "Down" then
     for index, value in ipairs(inventory.scrap) do
       if turtle.compare[dir]() then
         compare = true
@@ -222,9 +227,11 @@ local function mainLoop()
       if not turtleMove() then
         -- If movement fails, check if a block is an obstacle
         if turtle.detect() then
+          -- Then what? I have no idea...
         end
         -- Is there enough fuel?
         if not turtle.getFuelLevel() > 0 then
+          -- Then what? I have no idea...
         end
       end
     else  -- Else, turn once.
@@ -257,6 +264,7 @@ rednet.open()
 -- Load last state from file
 -- Run self checks
   -- Get GPS location
+-- Update inventory
   countInventory()
 -- Set selected slot to 1
   selectInventorySlot(1)
