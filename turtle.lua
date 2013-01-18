@@ -194,9 +194,12 @@ end
 -- Returns true if block is a scrap block.
 local function detectScrapBlock(dir)
   local compareDirection = {
-    front = turtle.compare(),
-    top = turtle.compareUp(),
-    bottom = turtle.compareDown(),
+    forward = turtle.compare(),
+    up = turtle.compareUp(),
+    down = turtle.compareDown(),
+    [0] = turtle.compare(),
+    [1] = turtle.compareUp(),
+    [2] = turtle.compareDown()
   }
   local compare = false
   for index, value in ipairs(inventory.scrap) do
@@ -248,6 +251,7 @@ end
 -- Event Loop
 -- **********************************************************************************
 local function eventLoop()
+  local event, p1, p2, p3, p4, p5 = os.pullEventRaw()
   -- Wait for events
     -- Handle events and put details into tables.
     -- Pass events on to mainLoop()
@@ -260,6 +264,8 @@ end
 --[[ -- Debugger is not able to run when instructions are given. Remove comments to run the program.
 -- Open network side
 rednet.open()
+-- Set os.pullEvent to Raw.
+os.pullEvent = os.pullEventRaw()
 -- Load last state from file
 -- Run self checks
   -- Get GPS location
