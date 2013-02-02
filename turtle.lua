@@ -54,15 +54,13 @@ local function writeMessage(message, msgLevel)
     nMSGLevel = table.concat(messageLevelNum, ", ", nMSGLevel, nMSGLevel)
     rednet.broadcast(os.date(dateFormat).." ["..nMSGLevel.."] "..message)
   end
-  if msgLevel >= messageOutputLevels.file then
-    if messageOutputFileName ~= nil then
-      -- Open file, write message and close file (flush doesn't seem to work!)
-      local outputFile = io.open(messageOutputFileName, "a")
-      local nMSGLevel = msgLevel + 1
-      nMSGLevel = table.concat(messageLevelNum, ", ", nMSGLevel, nMSGLevel)
-      outputFile:write(os.date(dateFormat).." ["..nMSGLevel.."]  "..message.."\n")
-      outputFile:close()
-    end
+  if msgLevel >= messageOutputLevels.file and messageOutputFileName ~= nil then
+    -- Open file, write message and close file (flush doesn't seem to work!)
+    local outputFile = io.open(messageOutputFileName, "a")
+    local nMSGLevel = msgLevel + 1
+    nMSGLevel = table.concat(messageLevelNum, ", ", nMSGLevel, nMSGLevel)
+    outputFile:write(os.date(dateFormat).." ["..nMSGLevel.."]  "..message.."\n")
+    outputFile:close()
   end
 end
 
