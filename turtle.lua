@@ -44,32 +44,20 @@ local inventory = {
 -- Writes a message in terminal and broadcasts the error.
 local function writeMessage(message, msgLevel)
   local dateFormat = "%Y-%m-%d %H:%M:%S"
+  local nMSGLevel = msgLevel + 1
+  nMSGLevel = table.concat(messageLevelNum, ", ", nMSGLevel, nMSGLevel)
   if msgLevel >= messageOutputLevels.print then
-    local nMSGLevel = msgLevel + 1
-    nMSGLevel = table.concat(messageLevelNum, ", ", nMSGLevel, nMSGLevel)
     print(os.date(dateFormat).." ["..nMSGLevel.."] "..message)
   end
   if msgLevel >= messageOutputLevels.broadcast then
-    local nMSGLevel = msgLevel + 1
-    nMSGLevel = table.concat(messageLevelNum, ", ", nMSGLevel, nMSGLevel)
     rednet.broadcast(os.date(dateFormat).." ["..nMSGLevel.."] "..message)
   end
   if msgLevel >= messageOutputLevels.file and messageOutputFileName ~= nil then
     -- Open file, write message and close file (flush doesn't seem to work!)
     local outputFile = io.open(messageOutputFileName, "a")
-    local nMSGLevel = msgLevel + 1
-    nMSGLevel = table.concat(messageLevelNum, ", ", nMSGLevel, nMSGLevel)
     outputFile:write(os.date(dateFormat).." ["..nMSGLevel.."]  "..message.."\n")
     outputFile:close()
   end
-end
-
--- Change message levels.
-local function changeMessageLevels(Print, Broadcast)
-  messagePrintLevel = messageLevel[Print]
-  messageBroadcastLevel = messageLevel[Broadcast]
-  writeMessage("(changeMessageLevels): Message levels changed. Print level: "..Print..". Broadcast level: "..Broadcast, messageLevel.INFO)
-  return messagePrintLevel, messageBroadcastLevel
 end
 
 -- Utility
@@ -107,7 +95,7 @@ end
 -- Update scrap block inventory list
 -- Action has to be "Add" or "Remove"
 local function updateScrapBlockList(action, slot)
-  table[action](inventory.scrap, slot)
+  -- table[action](inventory.scrap, slot)
   table.sort(inventory.scrap)
   writeMessage("(updateScrapBlockList): Slot number "..slot.." "..action" from/to scrap list.", messageLevel.INFO)
   return(true)
