@@ -3,25 +3,20 @@
 -- **********************************************************************************
 
 local directions = {
-  [0] = "north",
-  [1] = "east",
-  [2] = "south",
-  [3] = "west",
-  [4] = "up",
-  [5] = "down",
-  north = 0,
-  east = 1,
-  south = 2,
-  west = 3,
-  up = 4,
-  down = 5
+    x = { pos = "north", neg = "south"},
+    y = { pos = "west", neg= "east"},
+    z = { pos = "up", neg = "down"}
 }
 
 -- Enumeration to store the the different types of message that can be written
 local messageLevel = { DEBUG=0, INFO=1, WARNING=2, ERROR=3, FATAL=4 }
-local messageLevelNum = { [0] = "DEBUG", [1] = "INFO", [2] = "WARNING", [3] = "ERROR", [4] = "FATAL" }
-local messagePrintLevel = messageLevel.INFO            -- Level to print to turtle terminal
-local messageBroadcastLevel = messageLevel.ERROR        -- Level to broadcast to server
+local messageLevelNum = { [1]="DEBUG", [2] = "INFO", [3] = "WARNING", [4] = "ERROR", [5] = "FATAL" }
+local messageOutputLevels = {         -- What levels to output what to
+  print     = messageLevel.DEBUG,      -- What level to print messages to turtle terminal
+  broadcast = messageLevel.FATAL,      -- What level to broadcast messages
+  file      = messageLevel.FATAL       -- What level to write messages to file
+}
+local messageOutputFileName = "turtle.log"
 -- Message system shamelessly adapted from AustinKK's Advanced Mining Turtle program. Thanks!
 
 -- **********************************************************************************
@@ -48,11 +43,25 @@ local inventory = {
 -- Messages
 -- Writes a message in terminal and broadcasts the error.
 local function writeMessage(message, msgLevel)
-  if msgLevel >= messagePrintLevel then
-    print(os.date("%H:%M:%S")..": "..messageLevelNum[msgLevel]": "..message)
+  if msgLevel >= messageOutputLevels.print then
+    local nMSGLevel = msgLevel + 1
+    nMSGLevel = table.concat(messageLevelNum, ", ", nMSGLevel, nMSGLevel)
+    print(os.date("%H:%M:%S")..": "..nMSGLevel..": "..message)
   end
-  if msgLevel >= messageBroadcastLevel then
-    return(rednet.broadcast(os.date("%H:%M:%S")..": "..messageLevelNum[msgLevel]": "..message))
+  if msgLevel >= messageOutputLevels.broadcast then
+    local nMSGLevel = msgLevel + 1
+    nMSGLevel = table.concat(messageLevelNum, ", ", nMSGLevel, nMSGLevel)
+    rednet.broadcast(os.date("%H:%M:%S")..": "..nMSGLevel..": "..message)
+  end
+  if msgLevel >= messageOutputLevels.file then
+    if messageOutputFileName ~= nil then
+      -- Open file, write message and close file (flush doesn't seem to work!)
+      local outputFile = io.open(messageOutputFileName, "a")
+      local nMSGLevel = msgLevel + 1
+      nMSGLevel = table.concat(messageLevelNum, ", ", nMSGLevel, nMSGLevel)
+      outputFile:write(os.date("%H:%M:%S")..": "..nMSGLevel..": "..message.."\n")
+      outputFile:close()
+    end
   end
 end
 
@@ -109,7 +118,7 @@ end
 local function selectInventorySlot(slot)
   turtle.select(slot)
   inventory.selected = slot
-  writeMessage("(selectInventorySlot): Inventory slot "..slot.." selected.", messageLevel.INFO)
+  writeMessage("(selectInventorySlot): Inventory slot "..slot.." selected.", messageLevel.DEBUG)
   return(true)
 end
 
@@ -244,7 +253,7 @@ local function mainLoop()
       -- Complete task
     -- Else, turn to face
       -- Complete task
-  until stop == true  -- Allow a command to stop the turtle?
+  until mainLoopStopVale == true  -- Allow a command to stop the turtle?
 end
 
 -- **********************************************************************************
@@ -261,7 +270,7 @@ end
 -- Program
 -- **********************************************************************************
 
---[[ -- Debugger is not able to run when instructions are given. Remove comments to run the program.
+--[[ -- Debugger is not able to run when instructions are given. Remove comment tags to run the program in Minecraft.
 -- Open network side
 rednet.open()
 -- Set os.pullEvent to Raw.
@@ -278,3 +287,5 @@ paralell.waitForAll(mainLoop(), eventLoop())
 -- When loops fail/shut down, save state to disk.
 -- End program
 --]]
+
+writeMessage("Test message", messageLevel.DEBUG)
