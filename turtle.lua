@@ -43,15 +43,16 @@ local inventory = {
 -- Messages
 -- Writes a message in terminal and broadcasts the error.
 local function writeMessage(message, msgLevel)
+  local dateFormat = "%Y-%m-%d %H:%M:%S"
   if msgLevel >= messageOutputLevels.print then
     local nMSGLevel = msgLevel + 1
     nMSGLevel = table.concat(messageLevelNum, ", ", nMSGLevel, nMSGLevel)
-    print(os.date("%H:%M:%S")..": "..nMSGLevel..": "..message)
+    print(os.date(dateFormat).." ["..nMSGLevel.."] "..message)
   end
   if msgLevel >= messageOutputLevels.broadcast then
     local nMSGLevel = msgLevel + 1
     nMSGLevel = table.concat(messageLevelNum, ", ", nMSGLevel, nMSGLevel)
-    rednet.broadcast(os.date("%H:%M:%S")..": "..nMSGLevel..": "..message)
+    rednet.broadcast(os.date(dateFormat).." ["..nMSGLevel.."] "..message)
   end
   if msgLevel >= messageOutputLevels.file then
     if messageOutputFileName ~= nil then
@@ -59,7 +60,7 @@ local function writeMessage(message, msgLevel)
       local outputFile = io.open(messageOutputFileName, "a")
       local nMSGLevel = msgLevel + 1
       nMSGLevel = table.concat(messageLevelNum, ", ", nMSGLevel, nMSGLevel)
-      outputFile:write(os.date("%H:%M:%S")..": "..nMSGLevel..": "..message.."\n")
+      outputFile:write(os.date(dateFormat).." ["..nMSGLevel.."]  "..message.."\n")
       outputFile:close()
     end
   end
