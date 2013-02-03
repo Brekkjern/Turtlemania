@@ -1,7 +1,3 @@
--- **********************************************************************************
--- Constants
--- **********************************************************************************
-
 local directions = {
     x = { pos = "north", neg = "south"},
     y = { pos = "west", neg= "east"},
@@ -19,10 +15,6 @@ local messageOutputLevels = {         -- What levels to output what to
 local messageOutputFileName = "turtle.log"
 -- Message system shamelessly adapted from AustinKK's Advanced Mining Turtle program. Thanks!
 
--- **********************************************************************************
--- Variables
--- **********************************************************************************
-
 -- Variable denotes what direction the turtle is facing
 local facing = 0
 
@@ -36,6 +28,8 @@ local inventory = {
   selected = 1    -- Selected inventory slot
 }
 
+local position
+
 -- **********************************************************************************
 -- Functions
 -- **********************************************************************************
@@ -43,16 +37,20 @@ local inventory = {
 -- Messages
 -- Writes a message in terminal and broadcasts the error.
 local function writeMessage(message, msgLevel)
-  local dateFormat = "%Y-%m-%d %H:%M:%S"
-  local nMSGLevel = msgLevel + 1
-  nMSGLevel = table.concat(messageLevelNum, ", ", nMSGLevel, nMSGLevel)
-  if msgLevel >= messageOutputLevels.print then
+
+  local dateFormat = "%Y-%m-%d %H:%M:%S"    -- The format to use for outputting date/time.
+  local nMSGLevel = msgLevel + 1            -- messageLevel and messageLevelNum is offset slightly. This fixes this offset.
+  nMSGLevel = table.concat(messageLevelNum, ", ", nMSGLevel, nMSGLevel)   -- Concats the table for use in the messages.
+
+  if msgLevel >= messageOutputLevels.print then       -- Print to screen
     print(os.date(dateFormat).." ["..nMSGLevel.."] "..message)
   end
-  if msgLevel >= messageOutputLevels.broadcast then
+
+  if msgLevel >= messageOutputLevels.broadcast then   -- Broadcast
     rednet.broadcast(os.date(dateFormat).." ["..nMSGLevel.."] "..message)
   end
-  if msgLevel >= messageOutputLevels.file and messageOutputFileName ~= nil then
+
+  if msgLevel >= messageOutputLevels.file and messageOutputFileName ~= nil then -- Write to file
     -- Open file, write message and close file (flush doesn't seem to work!)
     local outputFile = io.open(messageOutputFileName, "a")
     outputFile:write(os.date(dateFormat).." ["..nMSGLevel.."]  "..message.."\n")
@@ -61,18 +59,6 @@ local function writeMessage(message, msgLevel)
 end
 
 -- Utility
--- Convert direction from numerical to string or vice versa.
-local function convertDirectionNum(dir)
-  if dir == string then
-    return(directions[dir])
-  elseif dir >= 0 or dir <= 3 then
-    return(tonumber(dir))
-  else
-    writeMessage("(convertDirectionNum): Bad argument. Direction not recognized. Got "..dir, messageLevel.FATAL)
-    return(false)
-  end
-end
-
 -- Function will count all inventory slots and also check the space of all slots and put the numbers in the inventory table.
 local function countInventory()
   inventory.empty = 0                           -- Reset empty counter
@@ -240,7 +226,7 @@ local function mainLoop()
       -- Complete task
     -- Else, turn to face
       -- Complete task
-  until mainLoopStopVale == true  -- Allow a command to stop the turtle?
+  until mainLoopStopValue == true  -- Allow a command to stop the turtle?
 end
 
 -- **********************************************************************************
@@ -257,14 +243,30 @@ end
 -- Program
 -- **********************************************************************************
 
---[[ -- Debugger is not able to run when instructions are given. Remove comment tags to run the program in Minecraft.
+-- Debugger is not able to run when instructions are given. Remove comment tags to run the program in Minecraft.
 -- Open network side
-rednet.open()
+rednet.open("right")
 -- Set os.pullEvent to Raw.
 os.pullEvent = os.pullEventRaw()
 -- Load last state from file
 -- Run self checks
   -- Get GPS location
+  local pos1 = vector.new(gps.locate(2, false))
+  while not turtle.forward do
+    turtle.up()
+  end
+  position = vector.new(gps.locate(2, false))
+  local pos2 = position.x, position.y, position.z
+  local vector = pos2 - pos1
+  if vector.x > 0 then
+    facing = 0
+  elseif vector.x < 0 then
+    facing = 2
+  elseif vector.y > 0 then
+    facing = 1
+  elseif vector.y < 0 then
+    facing = 3
+  end
 -- Update inventory
   countInventory()
 -- Set selected slot to 1
@@ -272,6 +274,7 @@ os.pullEvent = os.pullEventRaw()
 -- Start eventLoop() and mainLoop() simoultaneously using CC API.
 paralell.waitForAll(mainLoop(), eventLoop())
 -- When loops fail/shut down, save state to disk.
+
 -- End program
 --]]
 
