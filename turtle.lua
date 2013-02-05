@@ -87,7 +87,14 @@ end
 -- Update scrap block inventory list
 -- Action has to be "Add" or "Remove"
 local function updateScrapBlockList(action, slot)
-  -- table[action](inventory.scrap, slot)
+  local actionValues = {
+    add = table.insert,
+    rem = table.remove
+  }
+
+  local validInput = {add = true, rem = true }
+
+  actionValues[action](inventory.scrap, slot)
   table.sort(inventory.scrap)
   writeMessage("(updateScrapBlockList): Slot number "..slot.." "..action" from/to scrap list.", messageLevel.INFO)
   return(true)
@@ -114,13 +121,13 @@ local function turtleTurn(dir)          -- Relative direction (right/left)
   dir = string.lower(dir)
 
   if not validInput[dir] then
-    writeMessage("(turtleTurn): Bad argument. Direction not recognized. Got "..direction, messageLevel.FATAL)
+    writeMessage("(turtleTurn): Bad argument. Direction not recognized. Got "..dir, messageLevel.FATAL)
     return(false)                             -- Returns false as input was not correct.
   end
 
   facing = "left" and facing - 1 or facing + 1  -- Adjusts facing
   facing = math.fmod(facing, 4)                 -- Wraps facing around
-  dir()   -- Turns turtle in the direction specified by the argument
+  dirValues[dir]()   -- Turns turtle in the direction specified by the argument
   return(facing)    -- Returns the facing as turning is always successful if the input is correct
 end
 
@@ -198,15 +205,17 @@ end
 -- Check if block in dir is a scrap block
 -- Returns true if block is a scrap block.
 local function detectScrapBlock(dir)
-  local compareDirection = {
-    forward = turtle.compare(),
-    up = turtle.compareUp(),
-    down = turtle.compareDown(),
-    [0] = turtle.compare(),
-    [1] = turtle.compareUp(),
-    [2] = turtle.compareDown()
+  local dirValues = {
+    forward = turtle.compare,
+    up = turtle.compareUp,
+    down = turtle.compare.Down
   }
+
+  local validInput = { forward = true, up = true, down = true }
+
+  dir = tostring(dir)
   local compare = false
+
   for index, value in ipairs(inventory.scrap) do
     selectInventorySlot(value)
     if compareDirection[dir] then
@@ -303,10 +312,6 @@ local function testFunction(variable)
   return(true)
 end
 
-turtle = { forward = testFunction, place = testFunction, placeUp = testFunction, placeDown = testFunction, select = testFunction }
+turtle = { forward = testFunction, turnLeft = testFunction, turnRight = testFunction, place = testFunction, placeUp = testFunction, placeDown = testFunction, select = testFunction }
 rednet = { broadcast = testFunction }
-selectInventorySlot(1)
-table.insert(inventory.count, 1, 5)
-table.insert(inventory.space, 1, 59)
-print("Inventory.list: "..inventory.count[1])
-print("Inventory.left: "..inventory.space[1])
+facing = 0
