@@ -1,13 +1,21 @@
-local directions = {
-  x = { pos = "north", neg = "south"},
-  y = { pos = "west", neg= "east"},
-  z = { pos = "up", neg = "down"}
+local position = {
+  x = 0,
+  y = 0,
+  z = 0
 }
-local numericDirections = {
-  north = 0,
-  east = 1,
-  south = 2,
-  west = 3
+
+local function turtleMove(movement, axis, func)
+  position[axis] = position[axis] + movement
+  return(func())
+end
+
+local moveFunctions = {
+  [0] = function() turtleMove( 1, "x", turtle.forward ) end,  -- North
+  [1] = function() turtleMove( 1, "y", turtle.forward ) end,  -- East
+  [2] = function() turtleMove(-1, "x", turtle.forward ) end,  -- South
+  [3] = function() turtleMove(-1, "y", turtle.forward ) end,  -- West
+  [4] = function() turtleMove( 1, "z", turtle.up ) end,       -- Up
+  [5] = function() turtleMove(-1, "z", turtle.down ) end      -- Down
 }
 
 -- Enumeration to store the the different types of message that can be written
@@ -34,7 +42,7 @@ local inventory = {
   selected = 1    -- Selected inventory slot
 }
 
-local position = {}
+
 
 -- **********************************************************************************
 -- Functions
@@ -146,31 +154,6 @@ local function turtleFace(dir)                -- Numeric direction
   return(true)                                  -- Returns true as turning is always possible
 end
 
--- Moving
--- Function to move the turtle in a relative direction.
-local function turtleMove(dir)  -- Dir must be a string
-  local dirValues = {           -- Functions for each valid input
-    forward = turtle.forward,
-    back = turtle.back,
-    up = turtle.up,
-    down = turtle.down
-    }
-
-  -- Valid inputs
-  local validInput = { forward = true, back = true, up = true, down = true }
-
-  dir = string.lower(dir)
-
-  -- Check to see if the input is valid
-  if not validInput[dir] then
-    writeMessage("(turtleMove): Bad argument. Direction not recognized. Got: "..dir, messageLevel.FATAL)
-    return(false)
-  end
-
-  -- Return movement boolean
-  return(dirValues[dir]())
-end
-
 -- Block manipulation
 -- Tries to place a block in the direction specified.
 -- Returns boolean value of success.
@@ -242,7 +225,7 @@ local function mainLoop()
         end
         -- Is there enough fuel?
         if not turtle.getFuelLevel() > 0 then
-          -- Then what? I have no idea...
+          -- Then what? Refuel?
         end
       end
     else  -- Else, turn once.
@@ -270,7 +253,7 @@ end
 -- Program
 -- **********************************************************************************
 
--- Debugger is not able to run when instructions are given. Remove comment tags to run the program in Minecraft.
+--[[ Debugger is not able to run when instructions are given. Remove comment tags to run the program in Minecraft.
 -- Open network side
 rednet.open("right")
 -- Remove bad functions
@@ -314,4 +297,5 @@ end
 
 turtle = { forward = testFunction, turnLeft = testFunction, turnRight = testFunction, place = testFunction, placeUp = testFunction, placeDown = testFunction, select = testFunction }
 rednet = { broadcast = testFunction }
-facing = 0
+
+move[1]()
