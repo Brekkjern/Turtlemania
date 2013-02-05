@@ -34,7 +34,7 @@ local inventory = {
   selected = 1    -- Selected inventory slot
 }
 
-local position
+local position = {}
 
 -- **********************************************************************************
 -- Functions
@@ -102,7 +102,7 @@ end
 
 -- Selects inventory slot and updates the table with what slot that is.
 local function selectInventorySlot(slot)
-  turtle.select(slot)
+  oldTurtleSelect(slot)
   inventory.selected = slot
   writeMessage("(selectInventorySlot): Inventory slot "..slot.." selected.", messageLevel.DEBUG)
   return(true)
@@ -270,7 +270,7 @@ end
 -- Program
 -- **********************************************************************************
 
---[[ Debugger is not able to run when instructions are given. Remove comment tags to run the program in Minecraft.
+-- Debugger is not able to run when instructions are given. Remove comment tags to run the program in Minecraft.
 -- Open network side
 rednet.open("right")
 -- Remove bad functions
