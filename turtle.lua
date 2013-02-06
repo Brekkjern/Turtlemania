@@ -4,18 +4,18 @@ local position = {
   z = 0
 }
 
-local function turtleMove(movement, axis, func)
+local function updatePosition(movement, axis, func)
   position[axis] = position[axis] + movement
   return(func())
 end
 
-local moveFunctions = {
-  [0] = function() turtleMove( 1, "x", turtle.forward ) end,  -- North
-  [1] = function() turtleMove( 1, "y", turtle.forward ) end,  -- East
-  [2] = function() turtleMove(-1, "x", turtle.forward ) end,  -- South
-  [3] = function() turtleMove(-1, "y", turtle.forward ) end,  -- West
-  [4] = function() turtleMove( 1, "z", turtle.up ) end,       -- Up
-  [5] = function() turtleMove(-1, "z", turtle.down ) end      -- Down
+local turtleMove = {
+  [0] = function() updatePosition( 1, "x", turtle.forward ) end,  -- North
+  [1] = function() updatePosition( 1, "y", turtle.forward ) end,  -- East
+  [2] = function() updatePosition(-1, "x", turtle.forward ) end,  -- South
+  [3] = function() updatePosition(-1, "y", turtle.forward ) end,  -- West
+  [4] = function() updatePosition( 1, "z", turtle.up ) end,       -- Up
+  [5] = function() updatePosition(-1, "z", turtle.down ) end      -- Down
 }
 
 -- Enumeration to store the the different types of message that can be written
@@ -41,8 +41,6 @@ local inventory = {
   full = 0,       -- Full inventory slots
   selected = 1    -- Selected inventory slot
 }
-
-
 
 -- **********************************************************************************
 -- Functions
@@ -290,6 +288,7 @@ paralell.waitForAll(mainLoop(), eventLoop())
 
 -- End program
 --]]
+
 local function testFunction(variable)
   print(variable)
   return(true)
@@ -297,5 +296,3 @@ end
 
 turtle = { forward = testFunction, turnLeft = testFunction, turnRight = testFunction, place = testFunction, placeUp = testFunction, placeDown = testFunction, select = testFunction }
 rednet = { broadcast = testFunction }
-
-move[1]()
